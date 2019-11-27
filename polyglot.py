@@ -198,7 +198,7 @@ def getLanguage(ficheiro):
     print("The text was written in: " + str(dict_paises[realLang[0]]))
     #Output das confiancas
     print("Trust in the output:")
-    for key, value in valores.items() :
+    for key, value in sorted(valores.items(), reverse=True) :
         print(key, value)
 
     #Returns the first result
