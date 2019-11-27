@@ -1,15 +1,26 @@
 #!/usr/bin/python3
 
-
- https://www.youtube.com/watch?v=YapTts_An9A  
-
 import argparse
 import re
 from difflib import get_close_matches
 from translate import Translator
+import os
+import time
+import playsound
+import speech_recognition as speech_rec 
+from gtts import gTTS
 
 #Variavel global que contara todas as ocorrencias de linguas
 totalOcurrencias =0
+
+def speak(ficheiro):
+    ficheiro = ficheiro.read()
+    #Vai criar um objeto gTTS, com conteudo "ficheiro" e com a especificação da linguagem do texto
+    texto = gTTS(text=ficheiro , lang='pt')
+    nomeFich = str("textoPT" + ".mp3")
+    #Cria e guarda um ficheiro de formato .mp3 para posteriormente ser reproduzido
+    texto.save(nomeFich)
+    playsound.playsound(nomeFich)
 
 def ptCalc(ficheiro):
     ficheiro.seek(0) #Garante que o ficheiro vai a ser lido do inicio
@@ -42,7 +53,10 @@ def ptCalc(ficheiro):
     valorPt += len(numerosPT)
     totalOcurrencias += len(numerosPT)
 
-    ficheiro.close()
+    #Pronomes
+    pronomesPT = re.findall(r'\smeu\s|\sminha\s|\smeus\s|\sminhas\s|\snosso\s|\snossa\s|\snossos\s|\snossas\s|\steu\s|\stua\s|\steus\s|\stuas\s|\svosso\s|\svossa\s|\svossos\s|\svossas\s|\sseu\s|\ssua\s|\sseus\s|\ssuas\s|\sseu\s|\ssua\s|\sseus\s|\ssuas\s|\scujo\s|\scuja\s|\scujos\s|\scujas\s|\squanto\s|\squanta\s|\squantos\s|\squantas\s|\squal\s|\squais\s|\squem\s|\smuito\s|\spouco\s|\stanto\s|\stodo\s|\snenhum\s|\salgum\s|\scerto\s|\soutro\s|\squalquer\s|\smuita\s|\spouca\s|\stanta\s|\stoda\s|\snenhuma\s|\salguma\s|\scerta\s|\soutra\s|\squalquer\s|\smuitos\s|\spoucos\s|\stantos\s|\stodos\s|\suns\s|\snenhuns\s|\salguns\s|\scertos\s|\soutros\s|\squaisquer\s|\sambos\s|\smuitas\s|\spoucas\s|\stantas\s|\stodas\s|\sumas\s|\snenhumas\s|\salgumas\s|\scertas\s|\soutras\s|\squaisquer\s|\sambas\s|\salguém\s|\scada\s|\studo\s|\sninguém\s|\snada\s|\squal\s|\soutrem\s',ficheiro)
+    valorPt += len(pronomesPT)
+    totalOcurrencias += len(pronomesPT)    
 
     return valorPt
 
@@ -77,7 +91,10 @@ def esCalc(ficheiro):
     valorES += len(numerosES)
     totalOcurrencias += len(numerosES)
 
-    ficheiro.close()
+    #Pronomes
+    pronomesES = re.findall(r'\syo\s|\snosotros\s|\snosotras\s|\stú\s|\susted\s|\svosotros\s|\svosotras\s|\sustedes\s|\sél\s|\sella\s|\sello\s|\sellos\s|\sellas\s|\sme\s|\snos\s|\ste\s|\sos\s|\slo\s|\sla\s|\slos\s|\slas\s|\sles\s|\seste\s|\sese\s|\saquel\s|\sestos\s|\sesos\s|\saquellos\s|\sesta\s|\sesa\s|\saquella\s|\sestas\s|\sesas\s|\saquellas\s|\seso\s|\sesto\s|\saquello\s|\smi\s|\stu\s|\ssu\s|\snuestro\s|\svuestro\s|\snuestra\s|\svuestra\s|\smis\s|\stus\s|\ssus\s|\snuestros\s|\svuestros\s|\snuestras\s|\svuestras\s|\smío\s|\stuyo\s|\ssuyo\s|\smíos\s|\stuyos\s|\ssuyos\s|\smía\s|\stuya\s|\ssuya\s|\smías\s|\stuyas\s|\ssuyas\s|\slo mío\s|\slo tuyo\s|\slo suyo\s|\slo nuestro\s|\slo vuestro\s|\salgún\s|\salguno\s|\sningún\s|\sninguno\s|\scualquier\s|\soutro\s|\spoco\s|\smucho\s|\salgunos\s|\sotros\s|\spocos\s|\smuchos\s|\svários\s|\salguna\s|\sninguna\s|\scualquiera\s|\sotra\s|\spoca\s|\smucha\s|\squienquiera\s|\salgunas\s|\soutras\s|\spocas\s|\smuchas\s|\svarias\s',ficheiro)
+    valorES += len(pronomesES)
+    totalOcurrencias += len(pronomesES)   
 
     return valorES
 
@@ -106,9 +123,12 @@ def engCalc(ficheiro):
     numerosENG = re.findall(r'\sone\s|\stwo\s|\sthree\s|\sfour\s|\sfive\s|\ssix\s|\sseven\s|\seight\s|\snine\s|\sten\s',ficheiro)
     valorEng += len(numerosENG)
     totalOcurrencias += len(numerosENG)
-
-    ficheiro.close()
     
+    #Pronomes
+    pronomesENG = re.findall(r'\sMe\s|\sYou\s|\sHim\s|\sHer\s|\sIt\s|\sUs\s|\sYou\s|\sThem\s|\sMy\s|\sYour\s|\sHis\s|\sHer\s|\sIts\s|\sOur\s|\sYour\s|\sTheir\s|\sMine\s|\sYours\s|\sHis\s|\sHers\s|\sIts\s|\sOurs\s|\sYours\s|\sTheirs\s|\sSomebody\s|\sAnybody\s|\sSomeone\s|\sAnyone\s|\sSomething\s|\sAnything\s|\sSomewhere\s|\sAnywhere\s|\sNobody\s|\sEverybody\s|\sNo one\s|\sEveryone\s|\sNothing\s|\sEverything\s|\sNowhere\s|\sEverywhere\s|\sme\s|\syou\s|\shim\s|\sher\s|\sit\s|\sus\s|\syou\s|\sthem\s|\smy\s|\syour\s|\shis\s|\sher\s|\sits\s|\sour\s|\syour\s|\stheir\s|\smine\s|\syours\s|\shis\s|\shers\s|\sits\s|\sours\s|\syours\s|\stheirs\s|\ssomebody\s|\sanybody\s|\ssomeone\s|\sanyone\s|\ssomething\s|\sanything\s|\ssomewhere\s|\sanywhere\s|\snobody\s|\severybody\s|\sno one\s|\severyone\s|\snothing\s|\severything\s|\snowhere\s|\severywhere\s',ficheiro)
+    valorEng += len(pronomesENG)
+    totalOcurrencias += len(pronomesENG)   
+
     return valorEng
 
 def dictPaises():
@@ -177,12 +197,12 @@ def getLanguage(ficheiro):
     #retorno da lingua mais semelhante ao melhor resultado
     print("The text was written in: " + str(dict_paises[realLang[0]]))
     #Output das confiancas
-    print("Trust in the output:\n")
+    print("Trust in the output:")
     for key, value in valores.items() :
         print(key, value)
 
     #Returns the first result
-    return dict_paises[realLang[0]]
+    return realLang[0]
 
 def translator(ficheiro):
     ficheiro.seek(0) #Garante que o ficheiro vai a ser lido do inicio
@@ -220,9 +240,16 @@ def run(args):
     if args.lang != None:
         ficheiro = open(args.lang, "r")
         getLanguage(ficheiro)
+        ficheiro.close()
     elif args.translate != None:
         ficheiro = open(args.translate, "r")
         translator(ficheiro)
+        ficheiro.close()
+    elif args.speech != None:
+        ficheiro = open(args.speech, "r")
+        speak(ficheiro)
+        ficheiro.close()
+
 
 
 
@@ -231,6 +258,7 @@ def main():
     parser = argparse.ArgumentParser(description="PALHA PALHA A DESCREVER O QUE ISTO FAZ!")
     parser.add_argument("-l", help="Retorna a lingua com o qual o texto foi escrito", dest="lang", type=str, required= False)
     parser.add_argument("-t", help="Traduz um texto para a lingua pretendida", dest="translate", type=str, required= False)
+    parser.add_argument("-s", help="Lê o ficheiro indicado.", dest="speech", type=str, required=False)
     parser.set_defaults(func=run)
     args = parser.parse_args()
     args.func(args)
