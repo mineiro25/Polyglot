@@ -12,6 +12,10 @@ from gtts import gTTS
 
 #Variavel global que contara todas as ocorrencias de linguas
 totalOcurrencias =0
+#Lingua origem
+oLang = "English"
+#Lingua destino
+destLang = "Portuguese"
 
 def speak(ficheiro):
     ficheiro = ficheiro.read()
@@ -202,30 +206,41 @@ def getLanguage(ficheiro):
         print(key, value)
 
     #Returns the first result
-    return realLang[0]
+    return dict_paises[realLang[0]]
 
 def translator(ficheiro):
-    ficheiro.seek(0) #Garante que o ficheiro vai a ser lido do inicio
-    ficheiro = ficheiro.read()
+
+    global oLang
+    global destLang
 
     #Dicionario com todos os paises
     dict_paises = dictPaises()
+
+    #Lingua do ficheiro recebido
+    oLang = getLanguage(ficheiro)
 
     #Recebe a lingua para o qual quer traduzir
     linguaDest = input("Por favor indique para lingua quer traduzir!\n")
 
     #Definir por default uma lingua
-    tradutor = Translator(to_lang = "en")
+    tradutor = Translator(from_lang= oLang, to_lang= destLang)
 
-    #Vai iterar pelo dicionario a procura da lingua mais proxima
-    for chave, lingua in dict_paises.items():
-        if linguaDest == lingua:
-            tradutor = Translator(to_lang = chave)
-
+    try:
+        #Vai iterar pelo dicionario a procura da lingua mais proxima
+        for chave, lingua in dict_paises.items():
+            if linguaDest == lingua:
+                destLang = linguaDest
+        tradutor = Translator(from_lang= oLang, to_lang= destLang)
+    except:
+        print("Algo correu mal nas definições de linguagem!")
     
+
+    ficheiro.seek(0) #Garante que o ficheiro vai a ser lido do inicio
     #Escrita da traducao num texto
     output = open("Traducao.txt", "w")
-    linhas = re.split(r'\n\n+',ficheiro)
+    linhas = re.split(r'(?s)((?:[^\n][\n]?)+)',ficheiro.read())
+    #Faz uma leitura por todos os elementos da lista, e remove todos os que sejam iguais a ''
+    linhas = list(filter(lambda a: a != '', linhas))
     for linha in linhas:
         #Texto ja traduzido
         traducao = tradutor.translate(str(linha))
