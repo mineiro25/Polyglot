@@ -175,6 +175,39 @@ def dictPaises():
 
     return dict_paises
 
+def dictCodePage():
+    dict_codepage = {
+        'Arabic' : 'cp1256',
+        'Bulgarian' : 'cp1251',
+        'Catalan' : 'cp1252',
+        'Czech' : 'cp1250',
+        'German' : 'cp1250',
+        'Greek' : 'cp1253',
+        'English' : 'cp1252',
+        'Finnish' : 'cp1257',
+        'French' : 'cp1252',
+        'Galician' : 'cp1252',
+        'Croatian' : 'cp1250',
+        'Hungarian' : 'cp1250',
+        'Italian' : 'cp1252',
+        'Korean' : 'cp1363',
+        'Latvian' : 'cp1257',
+        'Lithuanian' : 'cp1257',
+        'Macedonian' : 'cp1251',
+        'Dutch' : 'cp1252',
+        'Polish' : 'cp1257',
+        'Portuguese' : 'cp1252',
+        'Russian' : 'cp1251',
+        'Swedish' : 'cp1252',
+        'Slovak' : 'cp1250',
+        'Slovenian' : 'cp1250',
+        'Spanish' : 'cp1252',
+        'Turkish' : 'cp1254',
+        'Vietnamese' : 'cp1258'
+    }
+
+    return dict_codepage
+
 def getLanguage(ficheiro):
 
     global totalOcurrencias
@@ -215,6 +248,8 @@ def translator(ficheiro):
 
     #Dicionario com todos os paises
     dict_paises = dictPaises()
+    #Dicionario com os codepages de diversos paises
+    dict_codepage = dictCodePage()
 
     #Lingua do ficheiro recebido
     oLang = getLanguage(ficheiro)
@@ -234,6 +269,8 @@ def translator(ficheiro):
     except:
         print("Algo correu mal nas definições de linguagem!")
     
+    #Compara as chaves do dicionario, com a lingua pretendida
+    codepage = get_close_matches(destLang, dict_codepage.keys())
 
     ficheiro.seek(0) #Garante que o ficheiro vai a ser lido do inicio
     #Escrita da traducao num texto
@@ -243,8 +280,8 @@ def translator(ficheiro):
     linhas = list(filter(lambda a: a != '', linhas))
     for linha in linhas:
         #Texto ja traduzido
-        traducao = tradutor.translate(str(linha))
-        output.write(traducao + "\n\n")
+        traducao = tradutor.translate(linha.encode(dict_codepage[codepage[0]]).decode())
+        output.write(traducao + "\n")
     
     output.close()
 
