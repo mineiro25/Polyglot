@@ -308,6 +308,7 @@ def clearText(ficheiro):
     return ficheiro
 
 def isTranslation(ficheiroO, ficheiroD):
+    #Criação de um ficheiro auxiliar para a verificação da tradução
     translator(ficheiroO, "Teste.txt")
     ficheiroO = open("Teste.txt", "r")
   
