@@ -209,6 +209,7 @@ def dictCodePage():
     return dict_codepage
 
 def getLanguage(ficheiro):
+    ficheiro.seek(0)
 
     global totalOcurrencias
     global realLang
@@ -241,7 +242,7 @@ def getLanguage(ficheiro):
     #Returns the first result
     return dict_paises[realLang[0]]
 
-def translator(ficheiro):
+def translator(ficheiroO, ficheiroD):
 
     global oLang
     global destLang
@@ -252,7 +253,7 @@ def translator(ficheiro):
     dict_codepage = dictCodePage()
 
     #Lingua do ficheiro recebido
-    oLang = getLanguage(ficheiro)
+    oLang = getLanguage(ficheiroO)
 
     #Recebe a lingua para o qual quer traduzir
     linguaDest = input("Por favor indique para lingua quer traduzir!\n")
@@ -272,10 +273,10 @@ def translator(ficheiro):
     #Compara as chaves do dicionario, com a lingua pretendida
     codepage = get_close_matches(destLang, dict_codepage.keys())
 
-    ficheiro.seek(0) #Garante que o ficheiro vai a ser lido do inicio
+    ficheiroO.seek(0) #Garante que o ficheiro vai a ser lido do inicio
     #Escrita da traducao num texto
-    output = open("Traducao.txt", "w")
-    linhas = re.split(r'(?s)((?:[^\n][\n]?)+)',ficheiro.read())
+    output = open(ficheiroD, "w")
+    linhas = re.split(r'(?s)((?:[^\n][\n]?)+)',ficheiroO.read())
     #Faz uma leitura por todos os elementos da lista, e remove todos os que sejam iguais a ''
     linhas = list(filter(lambda a: a != '', linhas))
     for linha in linhas:
@@ -287,30 +288,92 @@ def translator(ficheiro):
 
     return traducao         
 
+def clearText(ficheiro):
+    ficheiro = ficheiro.read()
 
+    #Limpa o ficheiro de acentos
+    ficheiro = re.sub(r'[âãáà]','a',ficheiro)
+    ficheiro = re.sub(r'[êéè]','e',ficheiro)
+    ficheiro = re.sub(r'[îíì]','i',ficheiro)
+    ficheiro = re.sub(r'[õôóò]','o',ficheiro)
+    ficheiro = re.sub(r'[ûúù]','u',ficheiro)
+    ficheiro = re.sub(r'[ÂÃÁÀ]','A',ficheiro)
+    ficheiro = re.sub(r'[ÊÉÈ]','E',ficheiro)
+    ficheiro = re.sub(r'[ÎÍÌ]','I',ficheiro)
+    ficheiro = re.sub(r'[ÕÔÓÒ]','O',ficheiro)
+    ficheiro = re.sub(r'[ÛÚÙ]','U',ficheiro)
+    ficheiro = re.sub(r'ñ','n',ficheiro)
+    ficheiro = re.sub(r'Ñ','N',ficheiro)
+
+    return ficheiro
+
+def isTranslation(ficheiroO, ficheiroD):
+    translator(ficheiroO, "Teste.txt")
+    ficheiroO = open("Teste.txt", "r")
+  
+    #Pega em todas as palavras que comecem por maiusculas
+    tokensO = re.findall(r'[A-Z][^ ]*', ficheiroO.read())
+    tokensD = re.findall(r'[A-Z][^ ]*', ficheiroD.read())
+    
+    #Faz uma leitura por todos os elementos da lista, e remove todos os que sejam iguais a ''
+    tokensO = list(filter(lambda a: a != '', tokensO))
+    tokensD = list(filter(lambda a: a != '', tokensD))
+
+    #Contador de tokens para depois indicar a confiança
+    numTokensTot = 0
+    numTokensTot += len(tokensO) + len(tokensD)
+
+    #Contador tokens equivalentes
+    numTokens = 0   
+
+    #Verificação das palavras e suas supostas traduções
+    for origem in tokensO:
+        for destino in tokensD:
+            if(origem == destino):
+                numTokens += 1
+
+    #Calculo da confiança
+    confianca = numTokens/numTokensTot
+
+    if(confianca == 0):
+        print("Não é tradução!\nConfiança: " + str(confianca))
+    elif(confianca > 0 and confianca <= 0.5):
+        print("Poderá não ser tradução!\nConfiança: " + str(confianca))
+    elif(confianca > 0.5 and confianca <= 0.65):
+        print("Poderá ser tradução!\nConfiança: " + str(confianca))
+    else:
+        print("É tradução!\nConfiança: " + str(confianca))   
+    
 def run(args):
     if args.lang != None:
         ficheiro = open(args.lang, "r")
         getLanguage(ficheiro)
         ficheiro.close()
     elif args.translate != None:
-        ficheiro = open(args.translate, "r")
-        translator(ficheiro)
-        ficheiro.close()
+        ficheiroO,ficheiroD = args.translate.split()
+        ficheiroO = open(ficheiroO, "r")
+        ficheiroD = open(ficheiroD, "r")
+        translator(ficheiroO,ficheiroD)
+        ficheiroO.close()
+        ficheiroD.close()
     elif args.speech != None:
         ficheiro = open(args.speech, "r")
         speak(ficheiro)
         ficheiro.close()
-
-
-
-
-
+    elif args.files != None:
+        ficheiroO,ficheiroD = args.files.split()
+        ficheiroO = open(ficheiroO, "r")
+        ficheiroD = open(ficheiroD, "r")
+        isTranslation(ficheiroO,ficheiroD)
+        ficheiroO.close()
+        ficheiroD.close()
+    
 def main():
     parser = argparse.ArgumentParser(description="PALHA PALHA A DESCREVER O QUE ISTO FAZ!")
     parser.add_argument("-l", help="Retorna a lingua com o qual o texto foi escrito", dest="lang", type=str, required= False)
     parser.add_argument("-t", help="Traduz um texto para a lingua pretendida", dest="translate", type=str, required= False)
     parser.add_argument("-s", help="Lê o ficheiro indicado.", dest="speech", type=str, required=False)
+    parser.add_argument("-c", help="Verifica se um ficheiro é tradução do outro", dest="files", type=str, required=False)
     parser.set_defaults(func=run)
     args = parser.parse_args()
     args.func(args)
