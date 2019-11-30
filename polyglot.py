@@ -18,10 +18,26 @@ oLang = "English"
 destLang = "Portuguese"
 
 def speak(ficheiro):
-    ficheiro = ficheiro.read()
+    #Recebe a linguagem ao qual esta a escrita o texto
+    global oLang
+    oLang = getLanguage(ficheiro)
+    #Define ja o nome do ficheiro que ira ser guardado
+    nomeFich = str(ficheiro.name.partition(".")[0] + ".mp3")
+
+    #Dicionario com todos os paises
+    dict_paises = dictPaises()   
+    
+    try:
+        #Vai iterar pelo dicionario a procura da lingua mais proxima
+        for chave, lingua in dict_paises.items():
+            if oLang == lingua:
+                oLang = chave
+    except:
+        print("Algo correu mal nas definições de linguagem!")
+    
     #Vai criar um objeto gTTS, com conteudo "ficheiro" e com a especificação da linguagem do texto
-    texto = gTTS(text=ficheiro , lang='pt')
-    nomeFich = str("textoPT" + ".mp3")
+    ficheiro.seek(0)
+    texto = gTTS(text=ficheiro.read() , lang=oLang)
     #Cria e guarda um ficheiro de formato .mp3 para posteriormente ser reproduzido
     texto.save(nomeFich)
     playsound.playsound(nomeFich)
