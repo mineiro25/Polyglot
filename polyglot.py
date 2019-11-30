@@ -360,7 +360,29 @@ def isTranslation(ficheiroO, ficheiroD):
         print("Poderá ser tradução!\nConfiança: " + str(confianca))
     else:
         print("É tradução!\nConfiança: " + str(confianca))   
+
+def writeText():
+    rec = speech_rec.Recognizer()
+    """
+    Quanto mais alto a sample rate, melhor a qualidade do audio, 
+    mas tambem maior banda larga, por isso tera um reconhecimento 
+    mais lento
     
+    """
+    ficheiro = open("som.txt","w")
+    with speech_rec.Microphone(sample_rate=48000) as fonte:
+        print("Pode começar a falar!")
+        som = rec.listen(fonte)
+        userTalk = "----Inicio do texto----"
+        while(userTalk != ""):
+            try:
+                userTalk = rec.recognize_google(som)
+                ficheiro.write(userTalk + "\n")
+            except Exception as e:
+                print("Exception: " + str(e))
+                break
+    ficheiro.close()
+
 def run(args):
     if args.lang != None:
         ficheiro = open(args.lang, "r")
@@ -384,13 +406,18 @@ def run(args):
         isTranslation(ficheiroO,ficheiroD)
         ficheiroO.close()
         ficheiroD.close()
+    elif args.talk == None:
+        writeText()
+    elif args.talk != None:
+        print("A flage -w nao recebe nenhum parâmetro")
     
 def main():
-    parser = argparse.ArgumentParser(description="PALHA PALHA A DESCREVER O QUE ISTO FAZ!")
-    parser.add_argument("-l", help="Retorna a lingua com o qual o texto foi escrito", dest="lang", type=str, required= False)
-    parser.add_argument("-t", help="Traduz um texto para a lingua pretendida", dest="translate", type=str, required= False)
-    parser.add_argument("-s", help="Lê o ficheiro indicado.", dest="speech", type=str, required=False)
-    parser.add_argument("-c", help="Verifica se um ficheiro é tradução do outro", dest="files", type=str, required=False)
+    parser = argparse.ArgumentParser(description="Polyglot é uma ferramenta multi-facetada capaz de:")
+    parser.add_argument("-l", help="Identificação da linguagem de escrita do texto indicado;", dest="lang", type=str, required= False)
+    parser.add_argument("-t", help="Tradução do texto indicado para a linguagem pretendida;", dest="translate", type=str, required= False)
+    parser.add_argument("-s", help="Reprodução via formato audio, do texto dado;", dest="speech", type=str, required=False)
+    parser.add_argument("-c", help="Verificação se um ficheiro é a tradução de um outro;", dest="files", type=str, required=False)
+    parser.add_argument("-w", help="Escrita de um ficheiro, fazendo uso do microfone disponivel no computador;", dest="talk", required=False)
     parser.set_defaults(func=run)
     args = parser.parse_args()
     args.func(args)
