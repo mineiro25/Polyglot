@@ -258,7 +258,7 @@ def getLanguage(ficheiro):
     #Returns the first result
     return dict_paises[realLang[0]]
 
-def translator(ficheiroO, ficheiroD):
+def translator(ficheiroO):
 
     global oLang
     global destLang
@@ -291,7 +291,7 @@ def translator(ficheiroO, ficheiroD):
 
     ficheiroO.seek(0) #Garante que o ficheiro vai a ser lido do inicio
     #Escrita da traducao num texto
-    output = open(ficheiroD, "w")
+    output = open("Traducao.txt", "w")
     linhas = re.split(r'(?s)((?:[^\n][\n]?)+)',ficheiroO.read())
     #Faz uma leitura por todos os elementos da lista, e remove todos os que sejam iguais a ''
     linhas = list(filter(lambda a: a != '', linhas))
@@ -324,10 +324,7 @@ def clearText(ficheiro):
     return ficheiro
 
 def isTranslation(ficheiroO, ficheiroD):
-    #Criação de um ficheiro auxiliar para a verificação da tradução
-    translator(ficheiroO, "Teste.txt")
-    ficheiroO = open("Teste.txt", "r")
-  
+
     #Pega em todas as palavras que comecem por maiusculas
     tokensO = re.findall(r'[A-Z][^ ]*', ficheiroO.read())
     tokensD = re.findall(r'[A-Z][^ ]*', ficheiroD.read())
@@ -361,7 +358,7 @@ def isTranslation(ficheiroO, ficheiroD):
     else:
         print("É tradução!\nConfiança: " + str(confianca))   
 
-def writeText():
+def writeText(ficheiro):
     rec = speech_rec.Recognizer()
     """
     Quanto mais alto a sample rate, melhor a qualidade do audio, 
@@ -369,18 +366,17 @@ def writeText():
     mais lento
     
     """
-    ficheiro = open("som.txt","w")
+    ficheiro = open(ficheiro,"w")
     with speech_rec.Microphone(sample_rate=48000) as fonte:
         print("Pode começar a falar!")
         som = rec.listen(fonte)
-        userTalk = "----Inicio do texto----"
-        while(userTalk != ""):
-            try:
-                userTalk = rec.recognize_google(som)
-                ficheiro.write(userTalk + "\n")
-            except Exception as e:
-                print("Exception: " + str(e))
-                break
+        userTalk = ""
+        try:
+            userTalk = rec.recognize_google(som)
+            print(userTalk)
+            ficheiro.write(userTalk + "\n")
+        except Exception as e:
+            print("Exception: " + str(e))
     ficheiro.close()
 
 def run(args):
@@ -389,12 +385,9 @@ def run(args):
         getLanguage(ficheiro)
         ficheiro.close()
     elif args.translate != None:
-        ficheiroO,ficheiroD = args.translate.split()
-        ficheiroO = open(ficheiroO, "r")
-        ficheiroD = open(ficheiroD, "r")
-        translator(ficheiroO,ficheiroD)
+        ficheiroO = open(args.translate, "r")
+        translator(ficheiroO)
         ficheiroO.close()
-        ficheiroD.close()
     elif args.speech != None:
         ficheiro = open(args.speech, "r")
         speak(ficheiro)
@@ -407,9 +400,10 @@ def run(args):
         ficheiroO.close()
         ficheiroD.close()
     elif args.talk == None:
-        writeText()
-    elif args.talk != None:
         print("A flage -w nao recebe nenhum parâmetro")
+    elif args.talk != None:
+        ficheiro = args.talk
+        writeText(ficheiro)
     
 def main():
     parser = argparse.ArgumentParser(description="Polyglot é uma ferramenta multi-facetada capaz de:")
